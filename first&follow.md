@@ -1,0 +1,38 @@
+# Conjuntos First e Follow
+
+## Conjuntos First
+```
+FIRST(list_item) = {ID, KEYWORD_END, LPAREN, MINUS, NUM_FLOAT, NUM_INT}
+FIRST(list_stmts) = {LPAREN}
+FIRST(num) = {MINUS, NUM_FLOAT, NUM_INT}
+FIRST(num_tipo) = {NUM_FLOAT, NUM_INT}
+FIRST(op_arit) = {DIV, INT_DIV, MINUS, MOD, MULT, PLUS, POW}
+FIRST(op_bin) = {DIV, EQ, GT, GTE, INT_DIV, LT, LTE, MINUS, MOD, MULT, NEQ, PLUS, POW}
+FIRST(op_rel) = {EQ, GT, GTE, LT, LTE, NEQ}
+FIRST(op_stmt_num) = {DIV, EQ, GT, GTE, INT_DIV, KEYWORD_FOR, LT, LTE, MINUS, MOD, MULT, NEQ, PLUS, POW}
+FIRST(op_stmt_stmt) = {DIV, EQ, GT, GTE, INT_DIV, KEYWORD_IF, LT, LTE, MINUS, MOD, MULT, NEQ, PLUS, POW}
+FIRST(prog) = {LPAREN}
+FIRST(rpn) = {ID, LPAREN, MINUS, NUM_FLOAT, NUM_INT}
+FIRST(rpn_tail_num) = {ID, KEYWORD_RES, LPAREN, MINUS, NUM_FLOAT, NUM_INT}
+FIRST(rpn_tail_stmt) = {ID, LPAREN, MINUS, NUM_FLOAT, NUM_INT}
+FIRST(stmt) = {LPAREN}
+```
+
+
+## Conjuntos Follow
+```
+FOLLOW(list_item) = {EOF}
+FOLLOW(list_stmts) = {EOF}
+FOLLOW(num) = {DIV, EQ, GT, GTE, ID, INT_DIV, KEYWORD_RES, LPAREN, LT, LTE, MINUS, MOD, MULT, NEQ, NUM_FLOAT, NUM_INT, PLUS, POW}
+FOLLOW(num_tipo) = {DIV, EQ, GT, GTE, ID, INT_DIV, KEYWORD_RES, LPAREN, LT, LTE, MINUS, MOD, MULT, NEQ, NUM_FLOAT, NUM_INT, PLUS, POW}
+FOLLOW(op_arit) = {RPAREN}
+FOLLOW(op_bin) = {RPAREN}
+FOLLOW(op_rel) = {RPAREN}
+FOLLOW(op_stmt_num) = {RPAREN}
+FOLLOW(op_stmt_stmt) = {RPAREN}
+FOLLOW(prog) = {EOF}
+FOLLOW(rpn) = {RPAREN}
+FOLLOW(rpn_tail_num) = {RPAREN}
+FOLLOW(rpn_tail_stmt) = {RPAREN}
+FOLLOW(stmt) = {DIV, EQ, GT, GTE, ID, INT_DIV, KEYWORD_FOR, KEYWORD_IF, LPAREN, LT, LTE, MINUS, MOD, MULT, NEQ, NUM_FLOAT, NUM_INT, PLUS, POW}
+```
