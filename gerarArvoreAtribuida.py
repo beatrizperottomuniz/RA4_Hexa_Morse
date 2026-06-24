@@ -52,6 +52,10 @@ def categoriaNo(no):
     if primeiro.tipo == 'ID':
         return 'leitura'
 
+    # rpn -> STRING KEYWORD_MORSE
+    if primeiro.tipo == 'STRING':
+        return 'morse'
+
     # rpn -> num rpn_tail_num
     if primeiro.tipo == 'num' and len(no.filhos) > 1:
         tail = no.filhos[1]
@@ -150,7 +154,7 @@ def labelNo(no, tipos_nos):
     if no.token:
         label += f'  [L{no.token.linha}:{no.token.coluna}]'
         lex = lexema(no.token)
-        if lex and no.token.tipo in ('NUM_INT', 'NUM_FLOAT', 'ID'):
+        if lex and no.token.tipo in ('NUM_INT', 'NUM_FLOAT', 'ID', 'STRING'):
             label += f'  "{lex}"'
     return label
 
@@ -185,7 +189,7 @@ def linhasMD(no, nivel, linhas, tipos_nos):
     if no.token:
         label += f' `[L{no.token.linha}:{no.token.coluna}]`'
         lex = lexema(no.token)
-        if lex and no.token.tipo in ('NUM_INT', 'NUM_FLOAT', 'ID'):
+        if lex and no.token.tipo in ('NUM_INT', 'NUM_FLOAT', 'ID', 'STRING'):
             label += f' `"{lex}"`'
     linhas.append(f'{indent}- {label}')
     for filho in no.filhos:
@@ -230,7 +234,7 @@ def desenharAtribuida(no, posicoes, ax, BOX_W, BOX_H, tipos_nos):
         label += f'\n: {tipo_inf}'
     if no.token:
         lex = lexema(no.token)
-        if lex and no.token.tipo in ('NUM_INT', 'NUM_FLOAT', 'ID'):
+        if lex and no.token.tipo in ('NUM_INT', 'NUM_FLOAT', 'ID', 'STRING'):
             label += f'\n"{lex}"'
         label += f'\nL{no.token.linha}:{no.token.coluna}'
 

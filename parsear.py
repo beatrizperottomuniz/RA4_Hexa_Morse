@@ -176,7 +176,7 @@ class Parser:
         self.match('RPAREN')
 
     def parseRpn(self):
-        #rpn ::= num rpn_tail_num| stmt rpn_tail_stmt| ID
+        #rpn ::= num rpn_tail_num | stmt rpn_tail_stmt | ID | STRING KEYWORD_MORSE
         producao = self.expandir('rpn')
         if producao is None:
             return
@@ -186,6 +186,9 @@ class Parser:
         elif producao[0] == 'stmt':
             self.parseStmt()
             self.parseRpnTailStmt()
+        elif producao[0] == 'STRING':
+            self.match('STRING')
+            self.match('KEYWORD_MORSE')
         else:
             self.match('ID')
 

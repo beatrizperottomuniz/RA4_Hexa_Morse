@@ -88,6 +88,12 @@ class Interpretador:
             nome = resgatarLexema(self.consumir())
             return self.memoria.get(nome, 0.0)
 
+        # ("texto" MORSE) retorno void
+        if t.tipo == TokenType.STRING:
+            self.consumir()  # consome STRING
+            self.consumir()  # consome KEYWORD_MORSE
+            return 0.0
+
         return 0.0
 
     def avaliarRpnTailNum(self, primeiro):

@@ -14,6 +14,7 @@ stmt ::= LPAREN rpn RPAREN
 rpn ::= num   rpn_tail_num
         | stmt  rpn_tail_stmt
         | ID
+        | STRING KEYWORD_MORSE
 
 num      ::= NUM_INT
             | NUM_FLOAT
@@ -46,8 +47,10 @@ KEYWORD_START = START
 KEYWORD_END = END
 KEYWORD_IF = IF
 KEYWORD_FOR = FOR
+KEYWORD_MORSE = MORSE
 
 ID = variáveis em letra maíuscula como X, CONTADOR
+STRING = texto entre aspas duplas como "OLA"
 NUM_INT = números inteiros como 10
 NUM_FLOAT = números reais como 10.5
 

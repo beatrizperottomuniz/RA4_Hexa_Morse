@@ -1,10 +1,9 @@
-# RA3_6
-### Analisador Semântico
+# RA4
+### Geração de código em hexa + Morse
 **Instituição** : PUCPR - Pontifícia Universidade Católica do Paraná<br>
 **Disciplina** : Linguagens Formais e Compiladores (Turma 9º U) - Engenharia de Computação (Noite) - 2026 / 1º Sem <br>
-**Professor** : Frank Coelho de Alcantara<br>
+**Professor** : Frank Coelho de Alcantara/Valter Klein Junior <br>
 **Aluna** : Beatriz Perotto Muniz [@beatrizperottomuniz](https://github.com/beatrizperottomuniz)<br>
-**Grupo** : RA3 6 
 
 ---
 
@@ -168,7 +167,7 @@ Produzem resultado do tipo `bool`. Ambos os operandos devem ser do mesmo tipo (`
 | `(MEM)` | Lê o valor armazenado em MEM | `(X)` |
 | `(N RES)` | Retorna o resultado de N instruções atrás | `(1 RES)` |
 
-`MEM` pode ser qualquer sequência de letras latinas maiúsculas que não seja uma palavra reservada (`START`, `END`, `IF`, `FOR`, `RES`).
+`MEM` pode ser qualquer sequência de letras latinas maiúsculas que não seja uma palavra reservada (`START`, `END`, `IF`, `FOR`, `RES`, `MORSE`).
 
 ### Estruturas de controle
 
@@ -188,6 +187,14 @@ Repete `body` exatamente N vezes. N deve ser um número inteiro maior que zero.
 
 Exemplo: `(3 (1 2 +) FOR)`
 
+**Morse — MORSE**
+```
+("texto" MORSE)
+```
+Exibe a string em código Morse via LED no simulador CPUlator. A string é convertida para maiúsculas antes da exibição — `"Abc"` equivale a `"ABC"`. Apenas letras (`A–Z`) e dígitos (`0–9`) são suportados; qualquer outro caractere resulta em erro semântico. Não produz valor — não pode ser atribuído a variável nem usado como operando.
+
+Exemplo: `("SOS" MORSE)`
+
 ---
 
 ## Sistema de tipos
@@ -201,6 +208,7 @@ A linguagem possui tipagem **estática e forte**. O tipo de cada variável é de
 | `int` | literal inteiro (`3`, `10`, `-5`) |
 | `float` | literal real (`3.0`, `1.5`, `-2.7`) |
 | `bool` | exclusivamente inferido de operadores relacionais (`==`, `!=`, `<`, `>`, `<=`, `>=`) |
+| `string` | literal textual entre aspas duplas (`"OLA"`, `"SOS"`) — aceito exclusivamente como operando de `MORSE` |
 
 **Não existem literais booleanos na linguagem.** Não há `true` nem `false`. O tipo `bool` só existe como resultado de uma expressão relacional — por isso os arquivos de teste não contêm literais lógicos.
 
@@ -283,6 +291,25 @@ Erro: condição do IF deve ser `bool`, recebeu `int`.
 ```
 Erro: expoente em `^` deve ser `int`, recebeu `float`.
 
+### Programa válido com MORSE
+
+```
+(START)
+("SOS" MORSE)
+("Ola" MORSE)
+(END)
+```
+Exibe `SOS` e `OLA` em código Morse via LED. Letras minúsculas são convertidas automaticamente.
+
+### Programa com erro semântico — caractere inválido em MORSE
+
+```
+(START)
+("OLÁ" MORSE)
+(END)
+```
+Erro: MORSE não suporta os caracteres: `['Á']`.
+
 ---
 
 ## Tabela de Símbolos
@@ -316,7 +343,7 @@ Cada nó relevante da árvore contém, além dos campos da Fase 2 (`tipo`, `toke
 | Campo | Descrição |
 |---|---|
 | `tipo_inferido` | Tipo semântico do resultado do nó|
-| `categoria_semantica` | Categoria do nó: `'expressao_aritmetica'`, `'expressao_relacional'`, `'atribuicao'`, `'leitura'`, `'recuperacao_resultado'`, `'decisao'`, `'repeticao'`, `'subexpressao'` |
+| `categoria_semantica` | Categoria do nó: `'expressao_aritmetica'`, `'expressao_relacional'`, `'atribuicao'`, `'leitura'`, `'recuperacao_resultado'`, `'decisao'`, `'repeticao'`, `'morse'`, `'subexpressao'` |
 | `simbolo` | Lexema do token (ex: `"+"`, `"3.14"`, `"X"`) para nós terminais relevantes |
 
 O campo `tipo_inferido` é o principal artefato semântico: permite rastrear o tipo de cada subexpressão e justifica a geração do código Assembly correspondente.
