@@ -12,6 +12,44 @@ variaveis        = set()
 resultados_linha = []
 for_ctrs         = []
 contador_label   = 0
+morse_usado      = False
+
+# --- Calibração do tempo Morse ---
+# Altere MORSE_UNIT_MS para ajustar a velocidade do Morse.
+# Calibrado no CPUlator ARMv7 DE1-SoC: 0x000F0000 (983040 iterações) ≈ 150ms.
+MORSE_UNIT_MS = 150
+
+def _calcArmImm(ms):
+    """Retorna o ARM immediate (inteiro) válido mais próximo para `ms` milissegundos."""
+    alvo = int(ms * (983040 / 150))
+    melhor_val  = 0x000F0000
+    melhor_diff = abs(melhor_val - alvo)
+    for imm8 in range(1, 256):
+        for rot in range(16):
+            shift = 2 * rot
+            if shift == 0:
+                cand = imm8
+            else:
+                cand = ((imm8 >> shift) | (imm8 << (32 - shift))) & 0xFFFFFFFF
+            diff = abs(cand - alvo)
+            if diff < melhor_diff:
+                melhor_diff = diff
+                melhor_val  = cand
+    return melhor_val
+
+
+MORSE_TABLE = {
+    'A': '.-',   'B': '-...',  'C': '-.-.',  'D': '-..',
+    'E': '.',    'F': '..-.',  'G': '--.',   'H': '....',
+    'I': '..',   'J': '.---',  'K': '-.-',   'L': '.-..',
+    'M': '--',   'N': '-.',    'O': '---',   'P': '.--.',
+    'Q': '--.-', 'R': '.-.',   'S': '...',   'T': '-',
+    'U': '..-',  'V': '...-',  'W': '.--',   'X': '-..-',
+    'Y': '-.--', 'Z': '--..',
+    '0': '-----', '1': '.----', '2': '..---', '3': '...--',
+    '4': '....-', '5': '.....', '6': '-....', '7': '--...',
+    '8': '---..', '9': '----.'
+}
 
 
 # aux
@@ -55,6 +93,37 @@ def pushConst(asm, val_str):
     asm.append(f"    VLDR d0, [r0]")
     asm.append(f"    VSTMDB sp!, {{d0}}")
     return val
+
+
+# morse
+
+def gerarMorse(texto, asm):
+    global morse_usado
+    morse_usado = True
+    chars = list(texto.upper())
+    ultimo_letra = -1
+    for i, char in enumerate(chars):
+        if char in MORSE_TABLE:
+            ultimo_letra = i
+    pendente_gap_letra = False
+    for i, char in enumerate(chars):
+        if char == ' ':
+            pendente_gap_letra = False
+            asm.append("    BL MORSE_GAP_WORD")
+        elif char in MORSE_TABLE:
+            if pendente_gap_letra:
+                asm.append("    BL MORSE_GAP_LETTER")
+            simbolos = MORSE_TABLE[char]
+            for j, simb in enumerate(simbolos):
+                if simb == '.':
+                    asm.append("    BL MORSE_DOT")
+                else:
+                    asm.append("    BL MORSE_DASH")
+                if j < len(simbolos) - 1:
+                    asm.append("    BL MORSE_GAP_INTRA")
+            pendente_gap_letra = (i < ultimo_letra)
+    asm.append("    BL MORSE_GAP_WORD")
+    pushConst(asm, "0.0")  # void, igual FOR/IF
 
 
 # ops aritm
@@ -270,7 +339,11 @@ def gerarRpnTailStmt(no, asm):
 def gerarRpn(no, asm):
     filho0 = no.filhos[0]
 
-    if filho0.tipo == 'num':
+    if filho0.tipo == 'STRING':
+        texto = lexemaTerminal(filho0)
+        gerarMorse(texto, asm)
+
+    elif filho0.tipo == 'num':
         ultimo_num = gerarNum(filho0, asm)
         gerarRpnTailNum(no.filhos[1], asm, ultimo_num)
 
@@ -395,6 +468,95 @@ def finalizarAssembly(codigo, arquivo):
       BL UART_PUTCHAR
       POP {r4, r5, r8, pc}
         """,
+    ])
+
+    if morse_usado:
+        out.append(f"""
+@ ---- MORSE subroutines ----
+@ unidade base = ~{MORSE_UNIT_MS}ms ({hex(_calcArmImm(MORSE_UNIT_MS))} iterações; altere MORSE_UNIT_MS em gerarAssembly.py)
+@ DOT      = 2 unidades =  300ms
+@ DASH     = 4 unidades =  600ms
+@ GAP_INTRA= 3 unidades =  450ms (entre simbolos da mesma letra)
+@ GAP_LETTER=6 unidades =  900ms (entre letras)
+@ GAP_WORD =13 unidades = ~1950ms (apos string completa)
+@ LED LEDR0: endereco 0xFF200000 (DE1-SoC, CPUlator v16.1)
+
+MORSE_UNIT_DELAY:
+    PUSH {{R3, LR}}
+    MOV  R3, #{hex(_calcArmImm(MORSE_UNIT_MS))}
+MORSE_UNIT_LOOP:
+    SUBS R3, R3, #1
+    BNE  MORSE_UNIT_LOOP
+    POP  {{R3, LR}}
+    BX   LR
+
+MORSE_DOT:
+    PUSH {{R1, R4, LR}}
+    MOV  R4, #0xFF000000
+    ORR  R4, R4, #0x00200000
+    MOV  R1, #1
+    STR  R1, [R4]
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    MOV  R1, #0
+    STR  R1, [R4]
+    POP  {{R1, R4, LR}}
+    BX   LR
+
+MORSE_DASH:
+    PUSH {{R1, R4, LR}}
+    MOV  R4, #0xFF000000
+    ORR  R4, R4, #0x00200000
+    MOV  R1, #1
+    STR  R1, [R4]
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    MOV  R1, #0
+    STR  R1, [R4]
+    POP  {{R1, R4, LR}}
+    BX   LR
+
+MORSE_GAP_INTRA:
+    PUSH {{LR}}
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    POP  {{LR}}
+    BX   LR
+
+MORSE_GAP_LETTER:
+    PUSH {{LR}}
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    POP  {{LR}}
+    BX   LR
+
+MORSE_GAP_WORD:
+    PUSH {{LR}}
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    BL   MORSE_UNIT_DELAY
+    POP  {{LR}}
+    BX   LR
+""")
+
+    out.extend([
         "    .global _start",
         "_start:",
         "    MRC p15, 0, r1, c1, c0, 2",
@@ -421,7 +583,7 @@ def finalizarAssembly(codigo, arquivo):
 
 def gerarAssembly(arvoreAtribuida):
     arquivo = "saida_assembly.s"
-    global constantes, variaveis, resultados_linha, for_ctrs, contador_label
+    global constantes, variaveis, resultados_linha, for_ctrs, contador_label, morse_usado
 
     if arvoreAtribuida is None:
         print("[gerarAssembly] árvore não disponível — Assembly não gerado.")
@@ -432,6 +594,7 @@ def gerarAssembly(arvoreAtribuida):
     resultados_linha = []
     for_ctrs         = []
     contador_label   = 0
+    morse_usado      = False
 
     asm = []
 
