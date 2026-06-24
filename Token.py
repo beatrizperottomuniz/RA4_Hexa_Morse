@@ -11,10 +11,12 @@ class TokenType:
     KEYWORD_END = "KEYWORD_END"
     KEYWORD_IF = "KEYWORD_IF"
     KEYWORD_FOR = "KEYWORD_FOR"
+    KEYWORD_MORSE = "KEYWORD_MORSE"
     # id (variaveis) e tipos literais
     ID = "ID"
     NUM_INT = "NUM_INT"
     NUM_FLOAT = "NUM_FLOAT"
+    STRING = "STRING"
     # operadores
     PLUS = "PLUS"
     MINUS = "MINUS"

@@ -158,7 +158,7 @@ def desenhar(no, posicoes, ax, BOX_W, BOX_H):
 
     label = no.tipo
     if no.token:                                                                                      
-        if no.token.tipo in ('NUM_INT', 'NUM_FLOAT', 'ID'):
+        if no.token.tipo in ('NUM_INT', 'NUM_FLOAT', 'ID', 'STRING'):
             lexema = string_pool_global.obterString(no.token.simbolo_id)
             if lexema and lexema != "desconhecido":                                                     
                 label += f'\n"{lexema}"'

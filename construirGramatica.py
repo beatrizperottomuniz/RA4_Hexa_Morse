@@ -23,7 +23,8 @@ gramatica_definida = {
     'rpn': [
         ['num',  'rpn_tail_num'],
         ['stmt', 'rpn_tail_stmt'],
-        ['ID']
+        ['ID'],
+        ['STRING', 'KEYWORD_MORSE']
     ],
     'num': [
         ['NUM_INT'],
