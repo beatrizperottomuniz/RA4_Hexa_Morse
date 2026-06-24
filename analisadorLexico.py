@@ -29,7 +29,8 @@ class Lexer:
             "START": TokenType.KEYWORD_START,
             "END": TokenType.KEYWORD_END,
             "IF": TokenType.KEYWORD_IF,
-            "FOR": TokenType.KEYWORD_FOR
+            "FOR": TokenType.KEYWORD_FOR,
+            "MORSE": TokenType.KEYWORD_MORSE
         }
         self.operadores = "+-*/%^><=!|"
         self.simbolos = {
@@ -69,7 +70,7 @@ class Lexer:
                 token_type = self.keywords[lex_str]
             else:
                 simbolo_id = self.string_pool.buscarOuAdicionar(lex_str)
-        elif token_type in (TokenType.NUM_INT, TokenType.NUM_FLOAT):
+        elif token_type in (TokenType.NUM_INT, TokenType.NUM_FLOAT, TokenType.STRING):
             simbolo_id = self.string_pool.buscarOuAdicionar(lex_str)
             
         elif token_type == TokenType.UNKNOWN:
@@ -114,6 +115,11 @@ class Lexer:
             self.advance()
             return self.estadoNumInt
         
+        # string literal delimitada por aspas duplas
+        if char == '"':
+            self.advance()  # consome a aspas de abertura
+            return self.estadoString
+
         # adicionado pra suportar comentarios
         if char == '*' and self.pos + 1 < len(self.src) and self.src[self.pos + 1] == '{':
             self.advance()  # consome *
@@ -227,7 +233,21 @@ class Lexer:
         self.emit(TokenType.NUM_FLOAT)
         return self.estadoInicio
 
-
+    def estadoString(self):
+        char = self.peek()
+        if char is None:
+            # string nao fechada antes do fim da linha
+            print(f"Erro na linha {self.linha}, coluna {self.inicio_col}: string literal não fechada\n")
+            self.emit(TokenType.UNKNOWN)
+            return None
+        if char == '"':
+            self.advance()  # consome aspas de fechamento
+            self.emit(TokenType.STRING)
+            return self.estadoInicio
+        self.buffer.append(char)
+        self.advance()
+        return self.estadoString
+    
     # estado de erro para consumir o resto do numero float errado -> ex : 1.2.34
     def estadoNumInvalido(self):
         char = self.peek()
@@ -238,7 +258,6 @@ class Lexer:
             
         self.emit(TokenType.UNKNOWN)
         return self.estadoInicio
-    
 
     # estado pra consumir comentarios
     def estadoComentario(self):
