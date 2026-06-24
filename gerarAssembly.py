@@ -470,25 +470,23 @@ def finalizarAssembly(codigo, arquivo):
         """,
     ])
 
+# DOT      = 2 unidades =  300ms
+# DASH     = 4 unidades =  600ms
+# GAP_INTRA= 3 unidades =  450ms (entre simbolos da mesma letra)
+# GAP_LETTER=6 unidades =  900ms (entre letras)
+# GAP_WORD =13 unidades = ~1950ms (apos string completa)
+# LED LEDR0: endereco 0xFF200000 (DE1-SoC, CPUlator v16.1)
+
     if morse_usado:
         out.append(f"""
 @ ---- MORSE subroutines ----
-@ unidade base = ~{MORSE_UNIT_MS}ms ({hex(_calcArmImm(MORSE_UNIT_MS))} iterações; altere MORSE_UNIT_MS em gerarAssembly.py)
-@ DOT      = 2 unidades =  300ms
-@ DASH     = 4 unidades =  600ms
-@ GAP_INTRA= 3 unidades =  450ms (entre simbolos da mesma letra)
-@ GAP_LETTER=6 unidades =  900ms (entre letras)
-@ GAP_WORD =13 unidades = ~1950ms (apos string completa)
-@ LED LEDR0: endereco 0xFF200000 (DE1-SoC, CPUlator v16.1)
-
 MORSE_UNIT_DELAY:
     PUSH {{R3, LR}}
     MOV  R3, #{hex(_calcArmImm(MORSE_UNIT_MS))}
 MORSE_UNIT_LOOP:
     SUBS R3, R3, #1
     BNE  MORSE_UNIT_LOOP
-    POP  {{R3, LR}}
-    BX   LR
+    POP  {{R3, PC}}
 
 MORSE_DOT:
     PUSH {{R1, R4, LR}}
@@ -500,8 +498,7 @@ MORSE_DOT:
     BL   MORSE_UNIT_DELAY
     MOV  R1, #0
     STR  R1, [R4]
-    POP  {{R1, R4, LR}}
-    BX   LR
+    POP  {{R1, R4, PC}}
 
 MORSE_DASH:
     PUSH {{R1, R4, LR}}
@@ -515,16 +512,14 @@ MORSE_DASH:
     BL   MORSE_UNIT_DELAY
     MOV  R1, #0
     STR  R1, [R4]
-    POP  {{R1, R4, LR}}
-    BX   LR
+    POP  {{R1, R4, PC}}
 
 MORSE_GAP_INTRA:
     PUSH {{LR}}
     BL   MORSE_UNIT_DELAY
     BL   MORSE_UNIT_DELAY
     BL   MORSE_UNIT_DELAY
-    POP  {{LR}}
-    BX   LR
+    POP  {{PC}}
 
 MORSE_GAP_LETTER:
     PUSH {{LR}}
@@ -534,8 +529,7 @@ MORSE_GAP_LETTER:
     BL   MORSE_UNIT_DELAY
     BL   MORSE_UNIT_DELAY
     BL   MORSE_UNIT_DELAY
-    POP  {{LR}}
-    BX   LR
+    POP  {{PC}}
 
 MORSE_GAP_WORD:
     PUSH {{LR}}
@@ -552,8 +546,7 @@ MORSE_GAP_WORD:
     BL   MORSE_UNIT_DELAY
     BL   MORSE_UNIT_DELAY
     BL   MORSE_UNIT_DELAY
-    POP  {{LR}}
-    BX   LR
+    POP  {{PC}}
 """)
 
     out.extend([
