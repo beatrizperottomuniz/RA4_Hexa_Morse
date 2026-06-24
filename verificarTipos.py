@@ -87,6 +87,13 @@ def verificarOpBin(tipo_esq, tipo_dir, op, linha, erros):
     # propaga ERRO
     if tipo_esq == 'ERRO' or tipo_dir == 'ERRO':
         return 'ERRO'
+    # string nao e operando valido em operacoes aritmeticas/relacionais
+    if tipo_esq == 'string' or tipo_dir == 'string':
+        erros.append(
+            f"Erro semântico (linha {linha}): operador '{simb}' não aceita "
+            f"operandos do tipo 'string'"
+        )
+        return 'ERRO'
     # IF/FOR como operando -> nao produz valor
     if tipo_esq is None or tipo_dir is None:
         erros.append(
@@ -219,6 +226,20 @@ def inferirTipoRpn(no_rpn, tabela, historico, erros, tipos_nos):
         tipos_nos[id(primeiro)] = tipo
         tipos_nos[id(no_rpn)]   = tipo
         return tipo
+
+    # rpn -> STRING KEYWORD_MORSE  (instrucao morse, retorno void)
+    if primeiro.tipo == 'STRING':
+        tipos_nos[id(primeiro)] = 'string'
+        # validacao especifica do MORSE: so A-Z e 0-9 apos upper
+        texto = lexema(primeiro.token) or ''
+        invalidos = [c for c in texto.upper() if c not in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ']
+        if invalidos:
+            erros.append(
+                f"Erro semântico (linha {linhaNo(primeiro)}): "
+                f"MORSE não suporta os caracteres: {sorted(set(invalidos))}"
+            )
+        tipos_nos[id(no_rpn)] = None  # void, como IF/FOR
+        return None
 
     if primeiro.tipo == 'num' and len(filhos) > 1:
         tipo_esq = inferirTipoNum(primeiro, tipos_nos)

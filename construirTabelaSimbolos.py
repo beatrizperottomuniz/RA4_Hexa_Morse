@@ -282,6 +282,9 @@ def processarRpn(no, tabela, contador, historico_tipos):
         if nome:
             tabela.registrarUso(nome, primeiro.token.linha)
         return
+    # rpn -> STRING KEYWORD_MORSE  (strings nao sao variaveis, nao registrar)
+    if primeiro.tipo == 'STRING':
+        return
     # rpn -> num rpn_tail_num
     if primeiro.tipo == 'num' and len(filhos) > 1:
         processarRpnTailNum(primeiro, filhos[1], tabela, contador, historico_tipos)
