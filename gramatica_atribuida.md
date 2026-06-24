@@ -26,6 +26,7 @@ Letras minúsculas = não-terminais · MAIÚSCULAS = terminais · `↑` = atribu
 | `op_bin` | `tipo_resultado↑` | — |
 | `op_arit` | — | — |
 | `op_rel` | — | — |
+| `STRING` | `lexema↑` (conteúdo textual entre aspas) | — |
 
 ---
 
@@ -81,6 +82,13 @@ rpn ::= num rpn_tail_num
         { tabela.registrarUso(ID.lexema, ID.linha)
           rpn.tipo↑ := tabela.buscar(ID.lexema).tipo
           -- erro semântico se ID não declarado -- }
+
+      | STRING KEYWORD_MORSE
+        { texto     := STRING.lexema
+          invalidos := [c para c em upper(texto) se c ∉ {A–Z, 0–9, ' '}]
+          se invalidos ≠ []:
+              erro()   -- [T-MORSECaractereErro]
+          rpn.tipo↑ := ok   -- MORSE tem julgamento de comando, não produz valor tipado }
 
 
 num ::= NUM_INT
@@ -212,6 +220,7 @@ op_rel  ::= GT | LT | GTE | LTE | EQ | NEQ
 |---|---|---|
 | `IF` | bool (resultado de op_rel) | qualquer |
 | `FOR` | int positivo | qualquer |
+| `MORSE` | string com caracteres em {A–Z, 0–9, ' '} após `upper` | — (não tem corpo) |
 
 ---
 
@@ -257,10 +266,12 @@ KEYWORD_START = START
 KEYWORD_END   = END
 KEYWORD_IF    = IF
 KEYWORD_FOR   = FOR
+KEYWORD_MORSE = MORSE
 
 ID        = variável em letras latinas maiúsculas (ex: X, CONTADOR, VAR)
 NUM_INT   = literal inteiro (ex: 10)
 NUM_FLOAT = literal real (ex: 3.14)
+STRING    = literal textual entre aspas duplas (ex: "SOS", "Ola")
 
 PLUS    = +       MINUS   = -       MULT  = *
 DIV     = |       INT_DIV = /       MOD   = %       POW = ^

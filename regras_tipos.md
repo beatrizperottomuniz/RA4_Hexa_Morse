@@ -20,8 +20,13 @@ Notação: `Γ ⊢ e : τ` significa "no ambiente de tipos Γ, a expressão e te
 
 ──────────────────────── [T-Float]
 Γ ⊢ NUM_FLOAT : float
+
+
+──────────────────────── [T-String]
+Γ ⊢ "s" : string
 ```
 
+O tipo `string` é exclusivo de literais entre aspas duplas. Não pode ser atribuído a variáveis nem usado como operando em operações aritméticas ou relacionais.
 Não existem literais lógicos na linguagem. O tipo `bool` é exclusivamente inferido a partir de expressões relacionais (ver Seção 4).
 
 ---
@@ -288,7 +293,49 @@ Usar o resultado de IF ou FOR como operando em operação aritmética ou relacio
 
 ---
 
-## 7. Comando especial RES
+## 7. Instrução MORSE
+
+### 7.1 Instrução `("s" MORSE)`
+
+```
+Γ ⊢ "s" : string    ∀c ∈ upper("s") : c ∈ {A–Z, 0–9, ' '}
+──────────────────────────────────────────────────────── [T-MORSE]
+Γ ⊢ ("s" MORSE) ok
+```
+
+A instrução MORSE exibe a string em código Morse via LED no simulador. Retorna julgamento de comando (`ok`), sem valor tipado — igual a IF e FOR.
+
+Caractere fora do conjunto `{A–Z, 0–9, ' '}` após `upper` resulta em erro semântico:
+
+```
+Γ ⊢ "s" : string    ∃c ∈ upper("s") : c ∉ {A–Z, 0–9, ' '}
+──────────────────────────────────────────────────────── [T-MORSECaractereErro]
+Γ ⊢ ("s" MORSE) : ⊥
+```
+
+### 7.2 MORSE não aceita não-string
+
+```
+Γ ⊢ e : τ    τ ≠ string
+──────────────────────────── [T-MORSETipoErro]
+Γ ⊢ (e MORSE) : ⊥
+```
+
+### 7.3 MORSE não produz valor
+
+Armazenar o resultado de MORSE em variável é erro semântico — MORSE possui apenas julgamento de comando (`ok`), não de expressão (`: τ`):
+
+```
+Γ ⊢ ("s" MORSE) ok
+────────────────────────────────────── [T-MORSEAssignErro]
+Γ ⊢ (("s" MORSE) x) : ⊥
+```
+
+Usar o resultado de MORSE como operando em operação aritmética ou relacional é coberto pela regra geral `T-ControleOperandoErro` (Seção 6), que se aplica a qualquer julgamento `ok`.
+
+---
+
+## 8. Comando especial RES
 
 ```
 n > 0    n ≤ |H|    H[|H| - n] = τ
@@ -321,7 +368,7 @@ A validação de `n < 0` e `n > |H|` — [T-RESInvalido] — é feita em `constr
 
 ---
 
-## 8. Resumo das combinações de tipos
+## 9. Resumo das combinações de tipos
 
 ### Operadores aritméticos `+` `-` `*`
 
@@ -375,7 +422,7 @@ A validação de `n < 0` e `n > |H|` — [T-RESInvalido] — é feita em `constr
 
 ---
 
-## 9. Nota de implementação — `null` na tabela de símbolos
+## 10. Nota de implementação — `null` na tabela de símbolos
 
 Os tipos da linguagem são exclusivamente `int`, `float` e `bool`. O valor `null` (Python `None`) **não é um tipo da linguagem** — é um marcador de implementação que aparece na tabela de símbolos apenas quando uma declaração é semanticamente inválida segundo T-IFAssignErro ou T-FORAssignErro.
 
