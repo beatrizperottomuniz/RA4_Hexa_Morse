@@ -14,13 +14,13 @@ for_ctrs         = []
 contador_label   = 0
 morse_usado      = False
 
-# --- Calibração do tempo Morse ---
-# Altere MORSE_UNIT_MS para ajustar a velocidade do Morse.
-# Calibrado no CPUlator ARMv7 DE1-SoC: 0x000F0000 (983040 iterações) ≈ 150ms.
-MORSE_UNIT_MS = 150
+# calibracao do tempo morse ----
+# altere p/ajustar a velocidade do morse
+# calibrado no CPUlator ARMv7 DE1-SoC: 0x000F0000 (983040 iterações) =(prox) 150ms
+morse_unidade_ms = 150
 
-def _calcArmImm(ms):
-    """Retorna o ARM immediate (inteiro) válido mais próximo para `ms` milissegundos."""
+def calcArmImm(ms):
+    # retorna o ARM immediate (inteiro) valido mais prox para ms
     alvo = int(ms * (983040 / 150))
     melhor_val  = 0x000F0000
     melhor_diff = abs(melhor_val - alvo)
@@ -38,7 +38,7 @@ def _calcArmImm(ms):
     return melhor_val
 
 
-MORSE_TABLE = {
+morse_tabela = {
     'A': '.-',   'B': '-...',  'C': '-.-.',  'D': '-..',
     'E': '.',    'F': '..-.',  'G': '--.',   'H': '....',
     'I': '..',   'J': '.---',  'K': '-.-',   'L': '.-..',
@@ -103,17 +103,17 @@ def gerarMorse(texto, asm):
     chars = list(texto.upper())
     ultimo_letra = -1
     for i, char in enumerate(chars):
-        if char in MORSE_TABLE:
+        if char in morse_tabela:
             ultimo_letra = i
     pendente_gap_letra = False
     for i, char in enumerate(chars):
         if char == ' ':
             pendente_gap_letra = False
             asm.append("    BL MORSE_GAP_WORD")
-        elif char in MORSE_TABLE:
+        elif char in morse_tabela:
             if pendente_gap_letra:
                 asm.append("    BL MORSE_GAP_LETTER")
-            simbolos = MORSE_TABLE[char]
+            simbolos = morse_tabela[char]
             for j, simb in enumerate(simbolos):
                 if simb == '.':
                     asm.append("    BL MORSE_DOT")
@@ -470,8 +470,8 @@ def finalizarAssembly(codigo, arquivo):
         """,
     ])
 
-# DOT      = 2 unidades =  300ms
-# DASH     = 4 unidades =  600ms
+# DOT= 2 unidades =  300ms
+# DASH= 4 unidades =  600ms
 # GAP_INTRA= 3 unidades =  450ms (entre simbolos da mesma letra)
 # GAP_LETTER=6 unidades =  900ms (entre letras)
 # GAP_WORD =13 unidades = ~1950ms (apos string completa)
@@ -482,7 +482,7 @@ def finalizarAssembly(codigo, arquivo):
 @ ---- MORSE subroutines ----
 MORSE_UNIT_DELAY:
     PUSH {{R3, LR}}
-    MOV  R3, #{hex(_calcArmImm(MORSE_UNIT_MS))}
+    MOV  R3, #{hex(calcArmImm(morse_unidade_ms))}
 MORSE_UNIT_LOOP:
     SUBS R3, R3, #1
     BNE  MORSE_UNIT_LOOP
