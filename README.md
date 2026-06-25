@@ -9,7 +9,7 @@
 
 ## Descrição
 
-Este projeto implementa um analisador semântico capaz de identificar tokens, fazer análise sintática e semântica, e gerar código assembly correspondente.
+Este projeto implementa um compilador capaz de identificar tokens, fazer análise sintática e semântica, gerar código assembly correspondente e em formato hexadecimal.
 
 ---
 
@@ -36,7 +36,7 @@ A execução é feita diretamente pelo interpretador Python.<br>
 ## Como executar
 
 ```
-python3 AnalisadorSemantico.py nome_do_arquivo.txt
+python3 Compilador.py nome_do_arquivo.txt
 ```
 
 O programa executa as três fases em sequência e exibe no terminal:
@@ -46,7 +46,7 @@ O programa executa as três fases em sequência e exibe no terminal:
 - Lista de erros encontrados (se houver)
 - Caminhos dos arquivos de saída gerados
 
-O assembly (`saida_assembly.s`) só é gerado se não houver nenhum erro léxico, sintático ou semântico.
+O assembly (`saida_assembly.s`) e o arquivo hexadecimal (`saida_final.hex`) só são gerados se não houver nenhum erro léxico, sintático ou semântico.
 
 _Obs: dependendo do sistema, `python3` pode ser substituído por `python`._
 
@@ -57,19 +57,26 @@ _Obs: dependendo do sistema, `python3` pode ser substituído por `python`._
 ### Com os arquivos de teste fornecidos
 
 ```
-python3 AnalisadorSemantico.py teste01.txt
-python3 AnalisadorSemantico.py teste02.txt
-python3 AnalisadorSemantico.py teste03.txt
+python3 Compilador.py teste01.txt
+python3 Compilador.py teste02.txt
+python3 Compilador.py teste03.txt
 ```
 
 Os arquivos `teste01_erros.txt`, `teste02_erros.txt` e `teste03_erros.txt` contêm erros intencionais (léxicos, sintáticos e semânticos) para validar o tratamento de erros.
 
-Para usar o assembly gerado:
+Para usar o arquivo `.hex` gerado (recomendado):
+1. Abra o simulador [Cpulator-ARMv7 DEC1-SOC(v16.1)](https://cpulator.01xz.net/?sys=arm-de1soc)
+2. No menu **File**, selecione **Load Memory Content**
+3. Altere o formato para **Hexadecimal** (uma linha por byte)
+4. Selecione o arquivo `saida_final.hex` gerado pelo compilador
+5. Clique em **Continue** para executar
+
+Para usar o assembly como referência ou depuração:
 1. Abra o arquivo `saida_assembly.s` gerado
-2. Copie o conteúdo e cole no simulador [Cpulator-ARMv7 DEC1-SOC(v16.1)](https://cpulator.01xz.net/?sys=arm-de1soc)
+2. Copie o conteúdo e cole no simulador
 3. Clique em **Compile and Load** e aguarde "Compile succeeded" em Messages
 4. Clique em **Continue** e verifique os resultados na JTAG UART
-5. Opcional: em Settings mude Format para "Decimal signed" para visualizar os valores em tempo real
+5. Opcional: compare o comportamento entre o `.hex` carregado e o `.s` compilado pelo CPUlator para verificar se o montador gerou o mesmo binário — diferenças indicam possível erro na codificação do `gerarHex.py`
 6. Opcional: use **Step Over** para executar instrução por instrução (resultados visíveis em `d0`)
 
 ### Com as funções de teste unitário
@@ -191,7 +198,7 @@ Exemplo: `(3 (1 2 +) FOR)`
 ```
 ("texto" MORSE)
 ```
-Exibe a string em código Morse via LED no simulador CPUlator. A string é convertida para maiúsculas antes da exibição — `"Abc"` equivale a `"ABC"`. Apenas letras (`A–Z`) e dígitos (`0–9`) são suportados; qualquer outro caractere resulta em erro semântico. Não produz valor — não pode ser atribuído a variável nem usado como operando.
+Exibe a string em código Morse via LED no simulador CPUlator. A string é convertida para maiúsculas antes da exibição — `"Abc"` equivale a `"ABC"`. Letras (`A–Z`), dígitos (`0–9`) e **espaço** são suportados; qualquer outro caractere resulta em erro semântico. O espaço é tratado como separador de palavras Morse (pausa longa entre palavras). Não produz valor — não pode ser atribuído a variável nem usado como operando.
 
 Exemplo: `("SOS" MORSE)`
 
@@ -297,9 +304,11 @@ Erro: expoente em `^` deve ser `int`, recebeu `float`.
 (START)
 ("SOS" MORSE)
 ("Ola" MORSE)
+("OLA MUNDO" MORSE)
+(3 ("SOS" MORSE) FOR)
 (END)
 ```
-Exibe `SOS` e `OLA` em código Morse via LED. Letras minúsculas são convertidas automaticamente.
+Exibe `SOS`, `OLA`, `OLA MUNDO` em código Morse via LED. Letras minúsculas são convertidas automaticamente. O espaço em `"OLA MUNDO"` gera uma pausa longa entre as palavras. O `FOR` repete a sequência SOS 3 vezes.
 
 ### Programa com erro semântico — caractere inválido em MORSE
 
@@ -373,6 +382,7 @@ A árvore atribuída é salva em:
 | `saida_arvore_atribuida.md` | árvore atribuída em Markdown |
 | `saida_arvore_atribuida.png` | árvore atribuída em imagem |
 | `saida_assembly.s` | código Assembly para Cpulator-ARMv7 |
+| `saida_final.hex` | binário em hexadecimal para carregar diretamente no CPUlator (File → Load Memory Content) |
 
 **Os artefatos presentes no repositório foram gerados a partir do arquivo `teste03.txt`.**
 
