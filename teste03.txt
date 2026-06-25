@@ -1,0 +1,29 @@
+*{ Teste 03: programa valido com aninhamento profundo e operadores relacionais }*
+(START)
+(5 3 +) *{ inteiros }*
+(6 2 -)
+(4 *{ multiplicacao inteira }* 3 *)
+(12 4 /)
+(8 2 |)
+(11 3 %)
+(3 4 ^)
+(4.0 2.0 +)
+*{ floats e aninhamento nivel 2 }*
+(6.0 3.0 -)
+(3.0 4.0 *)
+(15.0 3.0 |)
+(2.0 3 ^)
+((5 3 +) (2 4 *) -)
+(15 N)
+(2.0 R)
+((N) 5 >=)
+((R) 1.0 <=)
+(1 RES)
+*{ aninhamento nivel 3 e 4 }*
+(((5 3 +) (2 4 *) -) (3 4 ^) +)
+((((4.0 2.0 +) (3.0 1.0 *) -) (2.0 3 ^) *) (1.0 2.0 +) |)
+*{ estruturas de controle }*
+(((N) 5 >=) ((5 3 +) (2 4 *) -) IF)
+(3 (((4.0 2.0 +) (3.0 1.0 *) -) (2.0 1.0 +) *) FOR)
+("BIA" MORSE)
+(END)

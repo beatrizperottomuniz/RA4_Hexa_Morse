@@ -1,0 +1,28 @@
+*{ Teste 02: programa valido com foco em floats e aninhamento }*
+(START)
+(3.0 2.0 +) *{ soma de floats }*
+(4 2 +)
+(8.0 3.0 -)
+(6 2 -)
+(4.0 2.0 *)
+(3 *{ multiplicacao inteira }* 4 *)
+(9.0 3.0 |)
+(8 2 |)
+(8 2 /)
+(7 3 %)
+*{ potenciacao e aninhamento nivel 2 }*
+(2 *{ potenciacao inteira }* 3 ^)
+(3.0 2 ^)
+((3.0 2.0 +) (1.0 2.0 *) -)
+((4.0 2.0 *) (3.0 1.0 +) |)
+(7.5 X)
+(2.5 Y)
+((X) (Y) <)
+(5 3 ==)
+(1 RES)
+*{ estruturas de controle }*
+(((X) (Y) <) ((3.0 2.0 +) (1.0 2.0 *) +) IF)
+(4 ((3.0 2.0 *) (1.0 2.0 +) -) FOR)
+("OLA MUNDO" MORSE)
+(2 ("SOS" MORSE) FOR)
+(END)
