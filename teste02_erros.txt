@@ -1,0 +1,23 @@
+*{ Teste 02 Erros: erros de tipos, lexicos e sintaticos }*
+(START)
+(3.0 2.0 +) *{ floats }*
+(8.0 3.0 -)
+(4.0 2.0 *)
+(9.0 3.0 |)
+(8 2 /)
+(7 3 %)
+*{ potenciacao }*
+(2 *{ potenciacao inteira }* 3 ^)
+(3.0 2 ^)
+(7.5 X)
+(2.5 Y)
+((X) (Y) <)
+((X) (Y) !=)
+(1 RES)
+(((X) (Y) <) ((3.0 2.0 +) (1.0 2.0 *) +) IF)
+(4 ((3.0 2.0 *) (1.0 2.0 +) -) FOR)
+(NAOEXISTE)
+(2.0 (1 2 +) FOR)
+(5.0 $ 2.0 -)
+(5 2 + 3)
+(END)

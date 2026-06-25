@@ -23,4 +23,6 @@
 ((5 5 ==) (2 3 +) IF)
 (((B) 2.0 >) (1 2 +) IF)
 (3 (1 2 +) FOR)
+("SOS" MORSE)
+(3 ("SOS" MORSE) FOR)
 (END)
